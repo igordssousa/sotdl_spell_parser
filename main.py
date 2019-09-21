@@ -4,14 +4,12 @@ import re
 
 traditions_folder_raw = "raw_traditions"
 traditions_folder_parsed = "parsed_traditions"
-keywords = ["Target", "Duration", "Area", "Requirements", "Attack Roll 20\+", "Sacrifice", "Aftereffect"]
+keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\+", "Sacrifice", "Aftereffect"]
 
 def list_traditions():
     raw_tradition_files = []
     # r=root, d=directories, f = files
     for r, _, f in os.walk(traditions_folder_raw):
-        print(r)
-        print(f)
         for file in f:
             if '.txt' in file:
                 t = (file, os.path.join(r, file))
@@ -94,12 +92,11 @@ def format_bold(match):
 
 def format_clear_exception(match):
     match = match.group()
-    match = re.sub("[a-z] [A-Z][^\"]*", format_inception, match)
+    match = re.sub("[a-z] (?!Size)[A-Z][^\"]*", format_inception, match)
     return match
 
 def format_inception(match):
     match = match.group()
-    print(match)
     return match[:1]+"\n"+match[2:]
 
 def break_before(match):
