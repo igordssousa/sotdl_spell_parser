@@ -1,10 +1,12 @@
 
 import os
 import re
+from spell import Spell
 
-traditions_folder_raw = "raw_traditions"
-traditions_folder_parsed = "parsed_traditions"
-keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\\+", "Sacrifice", "Aftereffect"]
+traditions_folder_raw = "traditions\\raw"
+traditions_folder_parsed = "traditions\\parsed"
+traditions_folder_old = "traditions\\old"
+traditions_folder_sorted = "traditions\\sorted"
 
 def list_traditions():
     raw_tradition_files = []
@@ -22,25 +24,25 @@ def parse_tradition(tradition):
     clean = remove_junk(t)
     clean = "+++ " + clean
     clean = break_spellname(clean)
-    clean = break_spelltype(clean)
-    clean = break_spelldescription(clean)
-    clean = break_keyword(clean)
-    clean = bolden(clean)
-    clean = clear_property_exceptions(clean)
-    clean = missing_seperator(clean)
 
-    save_tradition(tradition[0], clean)
+    spells = raw_to_spells(clean)
+    for spell in spells:
+        print(spell)
 
-def missing_seperator(clean):
-    return re.sub("[a-z]\n[A-Z]", format_horizontal_line, clean)
+    save_tradition(tradition[0], spells_to_file(spells))
 
-def clear_property_exceptions(clean):
-    return re.sub("(Area|Target|Duration)\\s*([^\n\r]*)", format_clear_exception, clean) 
+def spells_to_file(spells):
+    txt = ""
+    for spell in spells:
+        txt = txt + f"{spell}\n\n"
+    return txt
 
-def bolden(clean):
-    for keyword in keywords:
-        clean = re.sub(f"\n{keyword}", format_bold, clean)
-    return clean
+def raw_to_spells(raw):
+    raw_spells = raw.split("\n\n")
+    spells = []
+    for raw_spell in raw_spells: 
+        spells.append(Spell(raw=raw_spell))
+    return spells
 
 def remove_junk(raw):
     raw = remove_pages(raw)
@@ -62,17 +64,6 @@ def break_spellname(clean):
     clean = re.sub("[a-z]\\. *[A-Z]{2}", prefix_line_break, clean)
     return clean
 
-def break_spelltype(clean):
-    return re.sub("[A-Z]* (UTILITY|ATTACK) [0-9]*", format_spelltype, clean)
-
-def break_spelldescription(clean):
-    return re.sub("[a-z][A-Z]", format_spelldescription, clean)
-
-def break_keyword(clean):
-    for keyword in keywords:
-        clean = re.sub(f" {keyword}", break_before, clean)
-    return clean
-
 def replace_with_breaks(match):
     match = match.group()
     return match + "\n----\n"
@@ -81,35 +72,6 @@ def prefix_line_break(match):
     match = match.group()
     match = re.sub(" ", "", match)
     return match[:2]+"\n\n+++ "+match[2:]
-
-def format_spelltype(match):
-    match = match.group()
-    return "\n//" + match + "//"
-
-def format_spelldescription(match):
-    match = match.group()
-    return match[:1] + "\n----\n" + match[1:]
-
-def format_bold(match):
-    match = match.group()
-    return match[:1]+"**"+match[1:]+"**"
-
-def format_clear_exception(match):
-    match = match.group()
-    match = re.sub("[a-z] (?!Size)[A-Z][^\"]*", format_inception, match)
-    return match
-
-def format_horizontal_line(match):
-    match = match.group()
-    return match[:2]+"----\n"+match[2:]
-
-def format_inception(match):
-    match = match.group()
-    return match[:1]+"\n"+match[2:]
-
-def break_before(match):
-    match = match.group()
-    return "\n" + match[1:]
 
 def save_tradition(name, content):
     file = open(f'{traditions_folder_parsed}/{name}', 'w')
