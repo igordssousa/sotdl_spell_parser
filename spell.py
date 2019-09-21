@@ -4,7 +4,10 @@ keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\\+", "S
 
 class Spell():
     "A Demonlord Spell"
-    def __init__(self, raw):
+    def __init__(self, raw=None, parsed=None):
+        if parsed is not None:
+            self.parsed = parsed
+            return
         self.raw = raw
         clean = break_spelltype(raw)
         clean = break_spelldescription(clean)
@@ -13,10 +16,6 @@ class Spell():
         clean = clear_property_exceptions(clean)
         clean = missing_seperator(clean)
         self.parsed = clean
-    def __repr__(self):
-        return repr((self.rank, self.rank))
-    # def __lt__(self, other):
-    #     pass #order using self.name and self.rank
     def __str__(self):
         return self.parsed
     @property    
@@ -24,6 +23,7 @@ class Spell():
         return self.parsed.split("\n")[0][4:]
     @property
     def rank(self):
+        # print(self.parsed.split("\n"))
         m = re.search("(UTILITY|ATTACK)", self.parsed.split("\n")[1]) 
         if m is None:
             return 0

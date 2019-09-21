@@ -9,16 +9,24 @@ traditions_folder_parsed = "traditions\\parsed"
 traditions_folder_old = "traditions\\old"
 traditions_folder_sorted = "traditions\\sorted"
 
-def list_traditions():
+def list_traditions(type):
     raw_tradition_files = []
     # r=root, d=directories, f = files
-    for r, _, f in os.walk(traditions_folder_raw):
+    for r, _, f in os.walk(type):
         for file in f:
             if '.txt' in file:
                 t = (file, os.path.join(r, file))
                 raw_tradition_files.append(t)
     
     return raw_tradition_files
+
+def parse_old_tradition(tradition):
+    path = f"{traditions_folder_old}\\{tradition}"
+    if os.path.exists(path):
+        t = open(path).read()
+        spells = old_to_spells(t)
+        return spells
+    return []
 
 def parse_tradition(tradition):
     t = open(tradition[1]).read()
@@ -27,9 +35,10 @@ def parse_tradition(tradition):
     clean = break_spellname(clean)
 
     spells = raw_to_spells(clean)
-    spells = sorted(spells, key=attrgetter('rank', 'name'))
-    # for spell in spells:
-    #     print(spell)
+    old_spells = parse_old_tradition(tradition[0])
+
+    spells = spells + old_spells
+    spells = sorted(spells, key=lambda spell: spell.rank)
 
     save_tradition(tradition[0], spells_to_file(spells))
 
@@ -38,6 +47,13 @@ def spells_to_file(spells):
     for spell in spells:
         txt = txt + f"{spell}\n\n"
     return txt
+    
+def old_to_spells(old):
+    old_spells = old.split("\n\n")
+    spells = []
+    for old_spell in old_spells: 
+        spells.append(Spell(parsed=old_spell))
+    return spells
 
 def raw_to_spells(raw):
     raw_spells = raw.split("\n\n")
@@ -81,9 +97,12 @@ def save_tradition(name, content):
     file.close()
 
 def main():
-    traditions = list_traditions()
-    for tradition in traditions:
+    traditions_to_parse = list_traditions(traditions_folder_raw)
+    for tradition in traditions_to_parse:
         parse_tradition(tradition)
-
+    
+    # traditions_to_import = list_traditions(traditions_folder_old)
+    # for tradition in traditions_to_import:
+    #     parse_tradition(tradition)
 if __name__ == '__main__':
     main()
