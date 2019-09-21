@@ -13,8 +13,10 @@ class Spell():
         clean = clear_property_exceptions(clean)
         clean = missing_seperator(clean)
         self.parsed = clean
-    def __lt__(self, other):
-        pass #order using self.name and self.rank
+    def __repr__(self):
+        return repr((self.rank, self.rank))
+    # def __lt__(self, other):
+    #     pass #order using self.name and self.rank
     def __str__(self):
         return self.parsed
     @property    
@@ -24,8 +26,8 @@ class Spell():
     def rank(self):
         m = re.search("(UTILITY|ATTACK)", self.parsed.split("\n")[1]) 
         if m is None:
-            return ""
-        return re.search("[0-9]+", self.parsed.split("\n")[1]).group()
+            return 0
+        return int(re.search("[0-9]+", self.parsed.split("\n")[1]).group(), 10)
 
 # Helper functions
 def missing_seperator(clean):
@@ -52,7 +54,7 @@ def break_keyword(clean):
 
 def format_spelltype(match):
     match = match.group()
-    return "\n//" + match + "//"
+    return "(OP)\n//" + match + "//"
 
 def format_spelldescription(match):
     match = match.group()

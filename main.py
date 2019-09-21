@@ -2,6 +2,7 @@
 import os
 import re
 from spell import Spell
+from operator import attrgetter
 
 traditions_folder_raw = "traditions\\raw"
 traditions_folder_parsed = "traditions\\parsed"
@@ -26,8 +27,9 @@ def parse_tradition(tradition):
     clean = break_spellname(clean)
 
     spells = raw_to_spells(clean)
-    for spell in spells:
-        print(spell)
+    spells = sorted(spells, key=attrgetter('rank', 'name'))
+    # for spell in spells:
+    #     print(spell)
 
     save_tradition(tradition[0], spells_to_file(spells))
 
