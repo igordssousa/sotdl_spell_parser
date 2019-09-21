@@ -4,7 +4,7 @@ import re
 
 traditions_folder_raw = "raw_traditions"
 traditions_folder_parsed = "parsed_traditions"
-keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\+", "Sacrifice", "Aftereffect"]
+keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\\+", "Sacrifice", "Aftereffect"]
 
 def list_traditions():
     raw_tradition_files = []
