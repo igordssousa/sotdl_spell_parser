@@ -27,8 +27,12 @@ def parse_tradition(tradition):
     clean = break_keyword(clean)
     clean = bolden(clean)
     clean = clear_property_exceptions(clean)
+    clean = missing_seperator(clean)
 
     save_tradition(tradition[0], clean)
+
+def missing_seperator(clean):
+    return re.sub("[a-z]\n[A-Z]", format_horizontal_line, clean)
 
 def clear_property_exceptions(clean):
     return re.sub("(Area|Target|Duration)\\s*([^\n\r]*)", format_clear_exception, clean) 
@@ -94,6 +98,10 @@ def format_clear_exception(match):
     match = match.group()
     match = re.sub("[a-z] (?!Size)[A-Z][^\"]*", format_inception, match)
     return match
+
+def format_horizontal_line(match):
+    match = match.group()
+    return match[:2]+"----\n"+match[2:]
 
 def format_inception(match):
     match = match.group()
