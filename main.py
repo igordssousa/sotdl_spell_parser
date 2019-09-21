@@ -23,16 +23,21 @@ def list_traditions(type):
 def parse_old_tradition(tradition):
     path = f"{traditions_folder_old}\\{tradition}"
     if os.path.exists(path):
-        t = open(path).read()
+        t = open(path, encoding="utf8").read()
         spells = old_to_spells(t)
         return spells
     return []
 
 def parse_tradition(tradition):
-    t = open(tradition[1]).read()
+    t = open(tradition[1], encoding="utf8").read()
     clean = remove_junk(t)
     clean = "+++ " + clean
     clean = break_spellname(clean)
+    # clean = break_bad_spellname(clean)
+
+    if tradition[0] == "metal.txt":
+        print(clean)
+    
 
     spells = raw_to_spells(clean)
     old_spells = parse_old_tradition(tradition[0])
@@ -82,6 +87,10 @@ def break_spellname(clean):
     clean = re.sub("[a-z]\\. *[A-Z]{2}", prefix_line_break, clean)
     return clean
 
+def break_bad_spellname(clean):
+    clean = re.sub("\\.[A-ZA-Z]", bad_breaks, clean) 
+    return clean
+
 def replace_with_breaks(match):
     match = match.group()
     return match + "\n----\n"
@@ -91,8 +100,12 @@ def prefix_line_break(match):
     match = re.sub(" ", "", match)
     return match[:2]+"\n\n+++ "+match[2:]
 
+def bad_breaks(match):
+    match = match.group()
+    return match[:1]+"\n\n+++ "+match[1:]
+
 def save_tradition(name, content):
-    file = open(f'{traditions_folder_parsed}/{name}', 'w')
+    file = open(f'{traditions_folder_parsed}/{name}', 'w', encoding="utf8")
     file.write(content)
     file.close()
 
@@ -100,9 +113,6 @@ def main():
     traditions_to_parse = list_traditions(traditions_folder_raw)
     for tradition in traditions_to_parse:
         parse_tradition(tradition)
-    
-    # traditions_to_import = list_traditions(traditions_folder_old)
-    # for tradition in traditions_to_import:
-    #     parse_tradition(tradition)
+
 if __name__ == '__main__':
     main()

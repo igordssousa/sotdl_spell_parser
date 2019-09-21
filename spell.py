@@ -1,6 +1,6 @@
 import re
 
-keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\\+", "Sacrifice", "Aftereffect"]
+keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\\+", "Sacrifice", "Aftereffect", "Triggered"]
 
 class Spell():
     "A Demonlord Spell"
@@ -27,6 +27,7 @@ class Spell():
         m = re.search("(UTILITY|ATTACK)", self.parsed.split("\n")[1]) 
         if m is None:
             return 0
+        # print(self.parsed.split("\n")[1])
         return int(re.search("[0-9]+", self.parsed.split("\n")[1]).group(), 10)
 
 # Helper functions
@@ -42,7 +43,7 @@ def bolden(clean):
     return clean
 
 def break_spelltype(clean):
-    return re.sub("[A-Z]* (UTILITY|ATTACK) [0-9]*", format_spelltype, clean)
+    return re.sub("[A-Z]* (UTILITY|ATTACK)\\s\\d[0-9]*", format_spelltype, clean)
 
 def break_spelldescription(clean):
     return re.sub("[a-z][A-Z]", format_spelldescription, clean)
