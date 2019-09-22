@@ -2,81 +2,99 @@ import re
 
 keywords = ["Target", "Duration", "Area", "Requirement", "Attack Roll 20\\+", "Sacrifice", "Aftereffect", "Triggered"]
 
+
 class Spell():
     "A Demonlord Spell"
+
     def __init__(self, raw=None, parsed=None):
         if parsed is not None:
             self.parsed = parsed
             return
         self.raw = raw
-        clean = break_spelltype(raw)
-        clean = break_spelldescription(clean)
-        clean = break_keyword(clean)
-        clean = bolden(clean)
-        clean = clear_property_exceptions(clean)
-        clean = missing_seperator(clean)
-        self.parsed = clean
+        t = break_spelltype(raw)
+        t = break_spelldescription(t)
+        t = break_keyword(t)
+        t = bolden(t)
+        t = clear_property_exceptions(t)
+        t = missing_seperator(t)
+        self.parsed = t
+
     def __str__(self):
         return self.parsed
-    @property    
-    def  name(self):
+
+    @property
+    def name(self):
         return self.parsed.split("\n")[0][4:]
+
     @property
     def rank(self):
         # print(self.parsed.split("\n"))
-        m = re.search("(UTILITY|ATTACK)", self.parsed.split("\n")[1]) 
+        m = re.search("(UTILITY|ATTACK)", self.parsed.split("\n")[1])
         if m is None:
             return 0
         # print(self.parsed.split("\n")[1])
         return int(re.search("[0-9]+", self.parsed.split("\n")[1]).group(), 10)
 
+
 # Helper functions
-def missing_seperator(clean):
-    return re.sub("[a-z]\n[A-Z]", format_horizontal_line, clean)
+def missing_seperator(t):
+    return re.sub("[a-z]\n[A-Z]", fmt_horizontal_line, t)
 
-def clear_property_exceptions(clean):
-    return re.sub("(Area|Target|Duration)\\s*([^\n\r]*)", format_clear_exception, clean) 
 
-def bolden(clean):
+def clear_property_exceptions(t):
+    return re.sub("(Area|Target|Duration)\\s*([^\n\r]*)", fmt_clear_exception, t)
+
+
+def bolden(t):
     for keyword in keywords:
-        clean = re.sub(f"\n{keyword}", format_bold, clean)
-    return clean
+        t = re.sub(f"\n{keyword}", fmt_bold, t)
+    return t
 
-def break_spelltype(clean):
-    return re.sub("[A-Z]* (UTILITY|ATTACK)\\s\\d[0-9]*", format_spelltype, clean)
 
-def break_spelldescription(clean):
-    return re.sub("[a-z][A-Z]", format_spelldescription, clean)
+def break_spelltype(t):
+    return re.sub("[A-Z]* (UTILITY|ATTACK)\\s\\d[0-9]*", fmt_spelltype, t)
 
-def break_keyword(clean):
+
+def break_spelldescription(t):
+    return re.sub("[a-z][A-Z]", fmt_spelldescription, t)
+
+
+def break_keyword(t):
     for keyword in keywords:
-        clean = re.sub(f" {keyword}", break_before, clean)
-    return clean
+        t = re.sub(f" {keyword}", break_before, t)
+    return t
 
-def format_spelltype(match):
+
+def fmt_spelltype(match):
     match = match.group()
     return "(OP)\n//" + match + "//"
 
-def format_spelldescription(match):
+
+def fmt_spelldescription(match):
     match = match.group()
     return match[:1] + "\n----\n" + match[1:]
 
-def format_bold(match):
+
+def fmt_bold(match):
     match = match.group()
     return match[:1]+"**"+match[1:]+"**"
 
-def format_clear_exception(match):
+
+def fmt_clear_exception(match):
     match = match.group()
-    match = re.sub("[a-z] (?!Size)[A-Z][^\"]*", format_inception, match)
+    match = re.sub("[a-z] (?!Size)[A-Z][^\"]*", fmt_inception, match)
     return match
 
-def format_horizontal_line(match):
+
+def fmt_horizontal_line(match):
     match = match.group()
     return match[:2]+"----\n"+match[2:]
 
-def format_inception(match):
+
+def fmt_inception(match):
     match = match.group()
     return match[:1]+"\n"+match[2:]
+
 
 def break_before(match):
     match = match.group()
