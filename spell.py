@@ -24,7 +24,15 @@ class Spell():
 
     @property
     def name(self):
-        return self.parsed.split("\n")[0][4:]
+        return self.parsed.split("\n")[0][4:].strip()
+
+    @property
+    def description(self):
+        full_descr = self.parsed.split("----\n")[-1]
+        descr_end = re.search("\\n\\*\\*(Attack|Sacrifice|Aftereffect|Triggered)", full_descr)
+        if descr_end is None:
+            return full_descr
+        return full_descr[:descr_end.start()]
 
     @property
     def rank(self):
@@ -32,6 +40,16 @@ class Spell():
         if m is None:
             return 0
         return int(re.search("[0-9]+", self.parsed.split("\n")[1]).group(), 10)
+
+    @property
+    def type(self):
+        m = re.search("(UTILITY|ATTACK)", self.parsed.split("\n")[1])
+        return m.group()
+
+    @property
+    def tradition(self):
+        m = self.parsed.split("\n")[1]
+        return m[2:m.find(" ")]
 
 
 # Helper functions

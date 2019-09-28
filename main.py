@@ -6,7 +6,6 @@ traditions_folder = Path("traditions")  # TODO: Pass as argument.
 traditions_folder_raw = traditions_folder / "raw"
 traditions_folder_parsed = traditions_folder / "parsed"
 traditions_folder_old = traditions_folder / "old"
-traditions_folder_sorted = traditions_folder / "sorted"
 SPELL_SEPARATOR = "\n\n"
 
 def list_traditions(traditions_path):
