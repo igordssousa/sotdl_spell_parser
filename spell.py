@@ -28,11 +28,9 @@ class Spell():
 
     @property
     def rank(self):
-        # print(self.parsed.split("\n"))
         m = re.search("(UTILITY|ATTACK)", self.parsed.split("\n")[1])
         if m is None:
             return 0
-        # print(self.parsed.split("\n")[1])
         return int(re.search("[0-9]+", self.parsed.split("\n")[1]).group(), 10)
 
 

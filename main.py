@@ -1,78 +1,56 @@
-
-import os
 import re
+from pathlib import Path
 from spell import Spell
 
-traditions_folder_raw = "traditions\\raw"
-traditions_folder_parsed = "traditions\\parsed"
-traditions_folder_old = "traditions\\old"
-traditions_folder_sorted = "traditions\\sorted"
+traditions_folder = Path("traditions")  # TODO: Pass as argument.
+traditions_folder_raw = traditions_folder / "raw"
+traditions_folder_parsed = traditions_folder / "parsed"
+traditions_folder_old = traditions_folder / "old"
+traditions_folder_sorted = traditions_folder / "sorted"
+SPELL_SEPARATOR = "\n\n"
+
+def list_traditions(traditions_path):
+    raw_paths = []
+    for f in traditions_path.iterdir():
+        if f.is_file() and f.suffix == ".txt":
+            raw_paths.append(f)
+    return raw_paths
 
 
-def list_traditions(type):
-    raw_tradition_files = []
-    # r=root, d=directories, f = files
-    for r, _, f in os.walk(type):
-        for file in f:
-            if '.txt' in file:
-                t = (file, os.path.join(r, file))
-                raw_tradition_files.append(t)
-    return raw_tradition_files
-
-
-def parse_old_tradition(tradition):
-    path = f"{traditions_folder_old}\\{tradition}"
-    if os.path.exists(path):
-        t = open(path, encoding="utf8").read()
-        spells = old_to_spells(t)
-        return spells
+def parse_old_tradition(tradition_path):
+    if tradition_path.exists() and tradition_path.is_file():
+        return convert_to_spells(tradition_path.read_text(encoding="utf8"))
     return []
 
 
 def parse_tradition(tradition):
-    t = open(tradition[1], encoding="utf8").read()
+    t = tradition.read_text(encoding="utf8")
     t = remove_junk(t)
     t = "+++ " + t
     t = break_spellname(t)
     t = break_bad_spellname(t)
 
-    spells = raw_to_spells(t)
-    old_spells = parse_old_tradition(tradition[0])
-
-    spells = spells + old_spells
+    spells = convert_to_spells(t, raw=True) + parse_old_tradition(traditions_folder_old / tradition.name)
     spells = sorted(spells, key=lambda spell: spell.rank)
 
-    save_tradition(tradition[0], spells_to_file(spells))
+    save_tradition(tradition.name, spells_to_file(spells))
 
 
 def spells_to_file(spells):
-    txt = ""
-    for spell in spells:
-        txt = txt + f"{spell}\n\n"
-    return txt
+    return SPELL_SEPARATOR.join(map(str, spells))
 
 
-def old_to_spells(old):
-    old_spells = old.split("\n\n")
-    spells = []
-    for old_spell in old_spells:
-        spells.append(Spell(parsed=old_spell))
-    return spells
-
-
-def raw_to_spells(raw):
-    raw_spells = raw.split("\n\n")
-    spells = []
-    for raw_spell in raw_spells:
-        spells.append(Spell(raw=raw_spell))
-    return spells
+def convert_to_spells(spell_data, raw=False):
+    return [
+        Spell(raw=s) if raw else Spell(parsed=s)
+        for s in spell_data.split(SPELL_SEPARATOR)
+    ]
 
 
 def remove_junk(raw):
     raw = remove_pages(raw)
     raw = remove_header(raw)
-    raw = remove_doublespaces(raw)
-    return raw
+    return remove_doublespaces(raw)
 
 
 def remove_pages(raw):
@@ -89,13 +67,11 @@ def remove_doublespaces(raw):
 
 def break_spellname(t):
     t = re.sub("[A-Z] [0-9]* ", replace_with_breaks, t)
-    t = re.sub("[a-z]\\. *[A-Z]{2}", prefix_line_break, t)
-    return t
+    return re.sub("[a-z]\\. *[A-Z]{2}", prefix_line_break, t)
 
 
 def break_bad_spellname(t):
-    t = re.sub("(\\. |\\.)[A-Z][A-Z]", bad_breaks, t)
-    return t
+    return re.sub("(\\. |\\.)[A-Z][A-Z]", bad_breaks, t)
 
 
 def replace_with_breaks(match):
@@ -115,9 +91,7 @@ def bad_breaks(match):
 
 
 def save_tradition(name, content):
-    file = open(f'{traditions_folder_parsed}/{name}', 'w', encoding="utf8")
-    file.write(content)
-    file.close()
+    (traditions_folder_parsed / name).write_text(content, encoding="utf8")
 
 
 def main():
@@ -128,3 +102,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
